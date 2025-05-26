@@ -1,6 +1,9 @@
 package main
 
-import "github.com/kwinso/kubsu-web-api/internal/server"
+import (
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/kwinso/kubsu-web-api/internal/server"
+)
 
 func main() {
 	if err := server.Serve(); err != nil {

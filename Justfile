@@ -8,3 +8,7 @@ migrate-down:
 
 db-gen:
   sqlc generate
+
+
+dev:
+  gow run cmd/server/main.go
