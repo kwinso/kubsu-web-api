@@ -8,7 +8,15 @@ import (
 	"github.com/kwinso/kubsu-web-api/internal/server/httputil"
 )
 
-func CreateSubmission(w http.ResponseWriter, r *http.Request) {
+type SubmissionController struct {
+}
+
+func (c *SubmissionController) Boot(mux *http.ServeMux) *http.ServeMux {
+	mux.HandleFunc("POST /submissions", c.CreateSubmission)
+	return mux
+}
+
+func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	submission, err := httputil.ParseBody(w, r, &dto.CreateSubmissionDTO{})
 	if err != nil {
 		httputil.HttpError(w, r, err, http.StatusBadRequest)

@@ -6,7 +6,7 @@ import (
 )
 
 type Rule struct {
-	Name       string
+	Field      string
 	Validators []Validator
 	Message    string
 }
@@ -23,7 +23,7 @@ func RunRules(rules []Rule, value any) ValidationResult {
 				if errs == nil {
 					errs = make(map[string]string)
 				}
-				errs[rule.Name] = rule.Message
+				errs[rule.Field] = rule.Message
 			}
 		}
 	}

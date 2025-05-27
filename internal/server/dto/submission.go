@@ -26,7 +26,7 @@ type CreateSubmissionDTO struct {
 func (s *CreateSubmissionDTO) Validate() validation.ValidationResult {
 	rules := []validation.Rule{
 		{
-			Name: "phone",
+			Field: "phone",
 			Validators: []validation.Validator{
 				validation.ValidPhone(s.Phone),
 			},
