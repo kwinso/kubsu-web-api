@@ -9,37 +9,91 @@ import (
 	"context"
 )
 
-const getSubmissions = `-- name: GetSubmissions :many
-select
-  id, name, phone, email, birth_date, bio, sex, created_at, username, password
-from
-  submissions
+const addLanguageToSubmission = `-- name: AddLanguageToSubmission :exec
+insert 
+  into submission_languages 
+    (submission_id, language_id)
+  values 
+    ($1, $2)
 `
 
-func (q *Queries) GetSubmissions(ctx context.Context) ([]Submission, error) {
-	rows, err := q.db.Query(ctx, getSubmissions)
+type AddLanguageToSubmissionParams struct {
+	SubmissionID int32 `json:"submission_id"`
+	LanguageID   int32 `json:"language_id"`
+}
+
+func (q *Queries) AddLanguageToSubmission(ctx context.Context, arg AddLanguageToSubmissionParams) error {
+	_, err := q.db.Exec(ctx, addLanguageToSubmission, arg.SubmissionID, arg.LanguageID)
+	return err
+}
+
+const createSubmission = `-- name: CreateSubmission :one
+insert 
+  into submissions 
+    (name, phone, email, birth_date, bio, sex, username, password)
+  values 
+    ($1, $2, $3, $4, $5, $6, $7, $8)
+returning id, name, phone, email, birth_date, bio, sex, created_at, username, password
+`
+
+type CreateSubmissionParams struct {
+	Name      string `json:"name"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	BirthDate string `json:"birth_date"`
+	Bio       string `json:"bio"`
+	Sex       int16  `json:"sex"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+}
+
+func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionParams) (Submission, error) {
+	row := q.db.QueryRow(ctx, createSubmission,
+		arg.Name,
+		arg.Phone,
+		arg.Email,
+		arg.BirthDate,
+		arg.Bio,
+		arg.Sex,
+		arg.Username,
+		arg.Password,
+	)
+	var i Submission
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Phone,
+		&i.Email,
+		&i.BirthDate,
+		&i.Bio,
+		&i.Sex,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
+}
+
+const getAllLanguages = `-- name: GetAllLanguages :many
+select
+  id
+from
+  languages
+`
+
+func (q *Queries) GetAllLanguages(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getAllLanguages)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Submission
+	var items []int32
 	for rows.Next() {
-		var i Submission
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Phone,
-			&i.Email,
-			&i.BirthDate,
-			&i.Bio,
-			&i.Sex,
-			&i.CreatedAt,
-			&i.Username,
-			&i.Password,
-		); err != nil {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, id)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

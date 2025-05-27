@@ -11,16 +11,19 @@ import (
 )
 
 func ParseBody[T dto.DTO](w http.ResponseWriter, r *http.Request, v T) (T, error) {
-	if IsContentType(r, "application/json") {
+	if ExpectsJSON(r) {
 		err := v.ParseJSON(w, r)
 		return v, err
-	}
-	if IsContentType(r, "multipart/form-data") {
+	} else {
 		err := v.ParseFormData(w, r)
 		return v, err
 	}
 
 	return v, errors.New("unsupported content type")
+}
+
+func ExpectsJSON(r *http.Request) bool {
+	return IsContentType(r, "application/json")
 }
 
 func IsContentType(r *http.Request, contentType string) bool {
@@ -43,7 +46,7 @@ func HttpError(w http.ResponseWriter, r *http.Request, err error, code int) {
 		jsonResp, jsonErr := json.MarshalIndent(resp, "", "  ")
 		if jsonErr != nil {
 			log.Println("Error marshalling error response:", jsonErr)
-			error500(w, r)
+			Error500(w, r)
 			return
 		}
 
@@ -55,11 +58,16 @@ func HttpError(w http.ResponseWriter, r *http.Request, err error, code int) {
 	http.Error(w, err.Error(), code)
 }
 
-func error500(w http.ResponseWriter, r *http.Request) {
+func Error500(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Accept") == "application/json" {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+}
+
+func WriteJSON(w http.ResponseWriter, r *http.Request, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(v)
 }

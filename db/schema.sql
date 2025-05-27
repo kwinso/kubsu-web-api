@@ -7,7 +7,7 @@ CREATE TABLE
     name VARCHAR(500) NOT NULL,
     phone VARCHAR(500) NOT NULL,
     email VARCHAR(500) NOT NULL,
-    birth_date DATE NOT NULL,
+    birth_date VARCHAR(10) NOT NULL,
     bio TEXT NOT NULL,
     sex SMALLINT NOT NULL, -- Use 0/1 or consider BOOLEAN if appropriate
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

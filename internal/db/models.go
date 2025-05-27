@@ -9,24 +9,24 @@ import (
 )
 
 type Language struct {
-	ID   int32
-	Name string
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
 }
 
 type Submission struct {
-	ID        int32
-	Name      string
-	Phone     string
-	Email     string
-	BirthDate pgtype.Date
-	Bio       string
-	Sex       int16
-	CreatedAt pgtype.Timestamp
-	Username  string
-	Password  string
+	ID        int32            `json:"id"`
+	Name      string           `json:"name"`
+	Phone     string           `json:"phone"`
+	Email     string           `json:"email"`
+	BirthDate string           `json:"birth_date"`
+	Bio       string           `json:"bio"`
+	Sex       int16            `json:"sex"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	Username  string           `json:"username"`
+	Password  string           `json:"password"`
 }
 
 type SubmissionLanguage struct {
-	SubmissionID int32
-	LanguageID   int32
+	SubmissionID int32 `json:"submission_id"`
+	LanguageID   int32 `json:"language_id"`
 }
