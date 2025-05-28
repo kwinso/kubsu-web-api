@@ -100,3 +100,65 @@ func (q *Queries) GetAllLanguages(ctx context.Context) ([]int32, error) {
 	}
 	return items, nil
 }
+
+const getSubmissionByIdAndCredentials = `-- name: GetSubmissionByIdAndCredentials :one
+select
+  id
+from
+  submissions
+where
+  id = $1
+  and username = $2
+  and password = $3
+`
+
+type GetSubmissionByIdAndCredentialsParams struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) GetSubmissionByIdAndCredentials(ctx context.Context, arg GetSubmissionByIdAndCredentialsParams) (int32, error) {
+	row := q.db.QueryRow(ctx, getSubmissionByIdAndCredentials, arg.ID, arg.Username, arg.Password)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateSubmission = `-- name: UpdateSubmission :exec
+update
+  submissions
+set
+  name = $1,
+  phone = $2,
+  email = $3,
+  birth_date = $4,
+  bio = $5,
+  sex = $6
+where
+  id = $7
+returning id, name, phone, email, birth_date, bio, sex, created_at, username, password
+`
+
+type UpdateSubmissionParams struct {
+	Name      string `json:"name"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	BirthDate string `json:"birth_date"`
+	Bio       string `json:"bio"`
+	Sex       int16  `json:"sex"`
+	ID        int32  `json:"id"`
+}
+
+func (q *Queries) UpdateSubmission(ctx context.Context, arg UpdateSubmissionParams) error {
+	_, err := q.db.Exec(ctx, updateSubmission,
+		arg.Name,
+		arg.Phone,
+		arg.Email,
+		arg.BirthDate,
+		arg.Bio,
+		arg.Sex,
+		arg.ID,
+	)
+	return err
+}

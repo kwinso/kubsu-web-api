@@ -1,6 +1,8 @@
 package validation
 
-import "regexp"
+import (
+	"regexp"
+)
 
 // TODO: Probably this thing should return message instead of a bool to allow different errors
 type Validator func() bool

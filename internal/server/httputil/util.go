@@ -11,19 +11,26 @@ import (
 )
 
 func ParseBody[T dto.DTO](w http.ResponseWriter, r *http.Request, v T) (T, error) {
-	if ExpectsJSON(r) {
+	if IsContentType(r, "application/json") {
 		err := v.ParseJSON(w, r)
 		return v, err
 	} else {
 		err := v.ParseFormData(w, r)
 		return v, err
 	}
-
-	return v, errors.New("unsupported content type")
 }
 
 func ExpectsJSON(r *http.Request) bool {
-	return IsContentType(r, "application/json")
+	return IsAccept(r, "application/json")
+}
+
+func IsAccept(r *http.Request, typ string) bool {
+	headerAccept := r.Header.Get("Accept")
+	if headerAccept == "" {
+		return false
+	}
+
+	return strings.Contains(headerAccept, typ)
 }
 
 func IsContentType(r *http.Request, contentType string) bool {
@@ -34,8 +41,16 @@ func IsContentType(r *http.Request, contentType string) bool {
 	return strings.Contains(headerContentType, contentType)
 }
 
+func NotFound(w http.ResponseWriter, r *http.Request) {
+	HttpError(w, r, errors.New("not found"), http.StatusNotFound)
+}
+
 func BadRequest(w http.ResponseWriter, r *http.Request, body string) {
 	http.Error(w, body, http.StatusBadRequest)
+}
+
+func Unauthorized(w http.ResponseWriter, r *http.Request) {
+	HttpError(w, r, errors.New("unauthorized"), http.StatusUnauthorized)
 }
 
 func HttpError(w http.ResponseWriter, r *http.Request, err error, code int) {

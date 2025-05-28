@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -16,7 +15,7 @@ import (
 	"github.com/kwinso/kubsu-web-api/internal/util"
 )
 
-type CreateSubmissionDTO struct {
+type CreateOrUpdateSubmissionDTO struct {
 	Name      string `json:"name"`
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
@@ -26,7 +25,7 @@ type CreateSubmissionDTO struct {
 	Languages []int  `json:"languages"`
 }
 
-func (s *CreateSubmissionDTO) Validate() validation.ValidationResult {
+func (s *CreateOrUpdateSubmissionDTO) Validate() validation.ValidationResult {
 	languages, _ := db.Query.GetAllLanguages(context.Background())
 
 	rules := []validation.Rule{
@@ -86,7 +85,7 @@ func (s *CreateSubmissionDTO) Validate() validation.ValidationResult {
 	return validation.RunRules(rules, s)
 }
 
-func (s *CreateSubmissionDTO) ParseJSON(w http.ResponseWriter, r *http.Request) error {
+func (s *CreateOrUpdateSubmissionDTO) ParseJSON(w http.ResponseWriter, r *http.Request) error {
 	r.Body = http.MaxBytesReader(w, r.Body, 1048576)
 
 	dec := json.NewDecoder(r.Body)
@@ -100,7 +99,7 @@ func (s *CreateSubmissionDTO) ParseJSON(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-func (s *CreateSubmissionDTO) ParseFormData(w http.ResponseWriter, r *http.Request) error {
+func (s *CreateOrUpdateSubmissionDTO) ParseFormData(w http.ResponseWriter, r *http.Request) error {
 	err := r.ParseMultipartForm(config.MAX_MEMORY)
 	if err != nil {
 		return err
@@ -130,7 +129,6 @@ func (s *CreateSubmissionDTO) ParseFormData(w http.ResponseWriter, r *http.Reque
 		}
 		s.Languages = append(s.Languages, languageID)
 	}
-	fmt.Println(s)
 
 	return nil
 }
