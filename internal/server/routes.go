@@ -20,13 +20,10 @@ type Route struct {
 
 // TODO:
 // 1. Route to serve main HTML page
-// 2. Route to handle POST request to create a new submission
-// 2.1 Should supoprt JSON & form data
-// 2.2 Should validate the request
-// 2.3 Should set username and password to cookies
-// 3. When getting main page, it should check cookies for username and password, and render the old submission if found
-// 4. Support updates with POST by ID (for form data)
-// 5. Support updates with PUT by ID (for JSON)
+// 2. When getting main page, it should check cookies for username and password, and render the old submission if found
+// 2.1. If not set, should be a POST request to /submissions
+// 2.2. If set, should be a POST request to /submissions/{id}
+// 3. Submitting via JS. Check for cookies and change the request accordingly
 
 func bootstrapRouting(mux *http.ServeMux, routes []Route) http.Handler {
 	for _, route := range routes {

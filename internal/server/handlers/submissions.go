@@ -22,7 +22,7 @@ func (c *SubmissionController) Boot(mux *http.ServeMux) *http.ServeMux {
 
 	// General PUT handler for JSON clients
 	mux.HandleFunc("PUT /submissions/{id}", c.UpdateSubmision)
-	// Fallback for non-js clients who will submit via form data
+	// Fallback for js-disabled clients who will submit via form data
 	mux.HandleFunc("POST /submissions/{id}", c.UpdateSubmision)
 
 	return mux
@@ -39,7 +39,7 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 
 	submission, err := httputil.ParseBody(w, r, &dto.CreateOrUpdateSubmissionDTO{})
 	if err != nil {
-		httputil.HttpError(w, r, err, http.StatusBadRequest)
+		httputil.BadRequest(w, r, err.Error())
 		return
 	}
 
@@ -98,14 +98,16 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 	} else {
 		// Set username and password cookies
 		http.SetCookie(w, &http.Cookie{
-			Name:     "username",
-			Value:    username,
-			HttpOnly: true,
+			Name:  "submission_id",
+			Value: strconv.Itoa(int(createdSubmission.ID)),
 		})
 		http.SetCookie(w, &http.Cookie{
-			Name:     "password",
-			Value:    password,
-			HttpOnly: true,
+			Name:  "username",
+			Value: username,
+		})
+		http.SetCookie(w, &http.Cookie{
+			Name:  "password",
+			Value: password,
 		})
 
 		w.Write([]byte("Here will be your main page"))
@@ -115,12 +117,13 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 func (c *SubmissionController) UpdateSubmision(w http.ResponseWriter, r *http.Request) {
 	submission, err := httputil.ParseBody(w, r, &dto.CreateOrUpdateSubmissionDTO{})
 	if err != nil {
-		httputil.HttpError(w, r, err, http.StatusBadRequest)
+		httputil.HttpError(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	vr := submission.Validate()
 	if vr.HasErrors() {
+		// TODO: Render errors to a template
 		httputil.BadRequest(w, r, vr.Format(r))
 		return
 	}
@@ -128,7 +131,7 @@ func (c *SubmissionController) UpdateSubmision(w http.ResponseWriter, r *http.Re
 	pathId := r.PathValue("id")
 	id, err := strconv.Atoi(pathId)
 	if err != nil {
-		httputil.BadRequest(w, r, "invalid id provided")
+		httputil.BadRequest(w, r, "Invalid id provided")
 		return
 	}
 
