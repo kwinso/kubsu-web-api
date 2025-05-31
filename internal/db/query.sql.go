@@ -74,31 +74,68 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 	return i, err
 }
 
+const deleteSubmissionLanguages = `-- name: DeleteSubmissionLanguages :exec
+delete from submission_languages where submission_id = $1
+`
+
+func (q *Queries) DeleteSubmissionLanguages(ctx context.Context, submissionID int32) error {
+	_, err := q.db.Exec(ctx, deleteSubmissionLanguages, submissionID)
+	return err
+}
+
 const getAllLanguages = `-- name: GetAllLanguages :many
 select
-  id
+  id, name
 from
   languages
 `
 
-func (q *Queries) GetAllLanguages(ctx context.Context) ([]int32, error) {
+func (q *Queries) GetAllLanguages(ctx context.Context) ([]Language, error) {
 	rows, err := q.db.Query(ctx, getAllLanguages)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	var items []Language
 	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
+		var i Language
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
-		items = append(items, id)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getFullSubmissionByIdAndCredentials = `-- name: GetFullSubmissionByIdAndCredentials :one
+select id, name, phone, email, birth_date, bio, sex, created_at, username, password from submissions where id = $1 and username = $2 and password = $3
+`
+
+type GetFullSubmissionByIdAndCredentialsParams struct {
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) GetFullSubmissionByIdAndCredentials(ctx context.Context, arg GetFullSubmissionByIdAndCredentialsParams) (Submission, error) {
+	row := q.db.QueryRow(ctx, getFullSubmissionByIdAndCredentials, arg.ID, arg.Username, arg.Password)
+	var i Submission
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Phone,
+		&i.Email,
+		&i.BirthDate,
+		&i.Bio,
+		&i.Sex,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
 }
 
 const getSubmissionByIdAndCredentials = `-- name: GetSubmissionByIdAndCredentials :one
@@ -123,6 +160,35 @@ func (q *Queries) GetSubmissionByIdAndCredentials(ctx context.Context, arg GetSu
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getSubmissionLanguages = `-- name: GetSubmissionLanguages :many
+select
+ language_id 
+from
+  submission_languages
+where
+  submission_id = $1
+`
+
+func (q *Queries) GetSubmissionLanguages(ctx context.Context, submissionID int32) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getSubmissionLanguages, submissionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var language_id int32
+		if err := rows.Scan(&language_id); err != nil {
+			return nil, err
+		}
+		items = append(items, language_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateSubmission = `-- name: UpdateSubmission :exec

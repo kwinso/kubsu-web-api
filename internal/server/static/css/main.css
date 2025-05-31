@@ -14,6 +14,24 @@
           box-sizing: border-box;
 }
 
+.language-selection {
+  margin-top: 10px;
+  width: 100%;
+}
+.language-selection select {
+    width: 100%;
+    padding: 8px;
+    height: auto;
+}
+
+.error {
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
 /* Links */
 a, a:link, a:visited {
   text-decoration: none;

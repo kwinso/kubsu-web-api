@@ -11,4 +11,4 @@ db-gen:
 
 
 dev:
-  gow run cmd/server/main.go -e=go,tmpl
+  gow run cmd/server/main.go -e=go,html

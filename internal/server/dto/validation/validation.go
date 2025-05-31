@@ -2,7 +2,6 @@ package validation
 
 import (
 	"encoding/json"
-	"net/http"
 )
 
 type Rule struct {
@@ -34,23 +33,7 @@ func (r *ValidationResult) HasErrors() bool {
 	return len(r.Errors) > 0
 }
 
-func (vr *ValidationResult) Format(r *http.Request) string {
-	if r.Header.Get("Accept") == "application/json" {
-		return vr.formatJSON()
-	}
-	return vr.formatHTML()
-}
-
-func (vr *ValidationResult) formatJSON() string {
+func (vr *ValidationResult) AsJsonString() string {
 	s, _ := json.Marshal(vr.Errors)
 	return string(s)
-}
-
-func (vr *ValidationResult) formatHTML() string {
-	// comma separated list of errors
-	res := ""
-	for k, v := range vr.Errors {
-		res += k + ": " + v + "\n"
-	}
-	return res
 }

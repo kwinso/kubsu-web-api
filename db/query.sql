@@ -1,6 +1,6 @@
 -- name: GetAllLanguages :many
 select
-  id
+  *
 from
   languages;
 
@@ -22,6 +22,16 @@ where
   and username = $2
   and password = $3;
 
+-- name: GetFullSubmissionByIdAndCredentials :one
+select * from submissions where id = $1 and username = $2 and password = $3;
+
+-- name: GetSubmissionLanguages :many
+select
+ language_id 
+from
+  submission_languages
+where
+  submission_id = $1;
 
 -- name: UpdateSubmission :exec
 update
@@ -43,3 +53,6 @@ insert
     (submission_id, language_id)
   values 
     ($1, $2);
+
+-- name: DeleteSubmissionLanguages :exec
+delete from submission_languages where submission_id = $1;

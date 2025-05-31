@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	config "github.com/kwinso/kubsu-web-api/internal"
 	"github.com/kwinso/kubsu-web-api/internal/db"
@@ -27,6 +26,10 @@ type CreateOrUpdateSubmissionDTO struct {
 
 func (s *CreateOrUpdateSubmissionDTO) Validate() validation.ValidationResult {
 	languages, _ := db.Query.GetAllLanguages(context.Background())
+	languageIds := make([]int32, len(languages))
+	for i, language := range languages {
+		languageIds[i] = language.ID
+	}
 
 	rules := []validation.Rule{
 		{
@@ -77,7 +80,7 @@ func (s *CreateOrUpdateSubmissionDTO) Validate() validation.ValidationResult {
 			Field: "languages",
 			Validators: []validation.Validator{
 				validation.MinLength(s.Languages, 1),
-				validation.EachIn(s.Languages, util.Int32ToInt(languages)),
+				validation.EachIn(s.Languages, util.Int32ToInt(languageIds)),
 			},
 			Message: "There should be at least one existing language selected",
 		},
@@ -117,17 +120,15 @@ func (s *CreateOrUpdateSubmissionDTO) ParseFormData(w http.ResponseWriter, r *ht
 	}
 	s.Sex = sex
 
-	languages := r.PostFormValue("languages")
-	if languages == "" {
-		return errors.New("expected languages to be a comma separated list of integers")
-	}
-
-	for language := range strings.SplitSeq(languages, ",") {
-		languageID, err := strconv.Atoi(language)
-		if err != nil {
-			return errors.New("expected languages to be a comma separated list of integers")
+	languages, ok := r.PostForm["languages"]
+	if ok {
+		for _, language := range languages {
+			languageID, err := strconv.Atoi(language)
+			if err != nil {
+				return errors.New("expected all languages valuse to be integers")
+			}
+			s.Languages = append(s.Languages, languageID)
 		}
-		s.Languages = append(s.Languages, languageID)
 	}
 
 	return nil

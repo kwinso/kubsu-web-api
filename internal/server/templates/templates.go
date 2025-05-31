@@ -9,14 +9,28 @@ import (
 //go:embed all:templates
 var templates embed.FS
 
+func inArray(val int32, slice []int32) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
 func Render(name string, data interface{}) ([]byte, error) {
-	filename := "templates/" + name + ".tmpl"
+	filename := "templates/" + name + ".html"
 	file, err := templates.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	tmpl, err := template.New(filename).Parse(string(file))
+	tmpl, err := template.
+		New(filename).
+		Funcs(template.FuncMap{
+			"inArray": inArray,
+		}).
+		Parse(string(file))
 	if err != nil {
 		return nil, err
 	}

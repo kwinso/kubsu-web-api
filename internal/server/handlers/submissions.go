@@ -9,11 +9,52 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/kwinso/kubsu-web-api/internal/db"
 	"github.com/kwinso/kubsu-web-api/internal/server/dto"
+	"github.com/kwinso/kubsu-web-api/internal/server/dto/validation"
 	"github.com/kwinso/kubsu-web-api/internal/server/httputil"
+	"github.com/kwinso/kubsu-web-api/internal/server/templates"
 	"github.com/kwinso/kubsu-web-api/internal/util"
 )
 
 type SubmissionController struct {
+}
+
+func (c *SubmissionController) checkValidation(w http.ResponseWriter, r *http.Request, vr validation.ValidationResult, submission *dto.CreateOrUpdateSubmissionDTO, existingSubmissionId int32) bool {
+	if !vr.HasErrors() {
+		return false
+	}
+	if httputil.ExpectsJSON(r) {
+		httputil.BadRequest(w, r, vr.AsJsonString())
+	}
+
+	// Ugly, but works
+	langs := make([]int32, len(submission.Languages))
+	for i, language := range submission.Languages {
+		langs[i] = int32(language)
+	}
+
+	allLanguages, err := db.Query.GetAllLanguages(r.Context())
+	if err != nil {
+		log.Println("Error getting languages:", err)
+		httputil.Error500(w, r)
+		return true
+	}
+
+	httputil.WriteTemplate(w, r, "main", templates.IndexContext{
+		Submission: templates.IndexContextSubmission{
+			ID:        existingSubmissionId,
+			Name:      submission.Name,
+			Phone:     submission.Phone,
+			Email:     submission.Email,
+			BirthDate: submission.BirthDate,
+			Bio:       submission.Bio,
+			Sex:       int(submission.Sex),
+			Languages: langs,
+		},
+		Errors:    vr.Errors,
+		Languages: allLanguages,
+	})
+
+	return true
 }
 
 // TODO: Add abiilty to show templates (for errors and for the main page)
@@ -44,8 +85,8 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 	}
 
 	vr := submission.Validate()
-	if vr.HasErrors() {
-		httputil.BadRequest(w, r, vr.Format(r))
+	failed := c.checkValidation(w, r, vr, submission, 0)
+	if failed {
 		return
 	}
 
@@ -110,7 +151,7 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 			Value: password,
 		})
 
-		w.Write([]byte("Here will be your main page"))
+		http.Redirect(w, r, "/?success=true", http.StatusSeeOther)
 	}
 }
 
@@ -118,13 +159,6 @@ func (c *SubmissionController) UpdateSubmision(w http.ResponseWriter, r *http.Re
 	submission, err := httputil.ParseBody(w, r, &dto.CreateOrUpdateSubmissionDTO{})
 	if err != nil {
 		httputil.HttpError(w, r, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	vr := submission.Validate()
-	if vr.HasErrors() {
-		// TODO: Render errors to a template
-		httputil.BadRequest(w, r, vr.Format(r))
 		return
 	}
 
@@ -162,7 +196,23 @@ func (c *SubmissionController) UpdateSubmision(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = db.Query.UpdateSubmission(r.Context(), db.UpdateSubmissionParams{
+	vr := submission.Validate()
+	failed := c.checkValidation(w, r, vr, submission, submissionId)
+	if failed {
+		return
+	}
+
+	tx, err := db.DB.Begin(r.Context())
+	if err != nil {
+		log.Println("Error starting transaction:", err)
+		httputil.Error500(w, r)
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	qtx := db.Query.WithTx(tx)
+
+	err = qtx.UpdateSubmission(r.Context(), db.UpdateSubmissionParams{
 		Name:      submission.Name,
 		Phone:     submission.Phone,
 		Email:     submission.Email,
@@ -177,11 +227,32 @@ func (c *SubmissionController) UpdateSubmision(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// Update submission languages
+	err = qtx.DeleteSubmissionLanguages(r.Context(), submissionId)
+	if err != nil {
+		log.Println("Error deleting submission languages:", err)
+		httputil.Error500(w, r)
+		return
+	}
+
+	for _, language := range submission.Languages {
+		err = qtx.AddLanguageToSubmission(r.Context(), db.AddLanguageToSubmissionParams{
+			SubmissionID: submissionId,
+			LanguageID:   int32(language),
+		})
+
+		if err != nil {
+			log.Println("Error adding language to submission:", err)
+			httputil.Error500(w, r)
+			return
+		}
+	}
+
+	tx.Commit(r.Context())
+
 	if httputil.ExpectsJSON(r) {
 		httputil.WriteJSON(w, r, submission)
 	} else {
-		// Redirect back to main page
-		// TODO: Render a page
-		w.Write([]byte("Here will be your main page"))
+		http.Redirect(w, r, "/?success=true", http.StatusSeeOther)
 	}
 }

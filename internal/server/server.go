@@ -17,6 +17,12 @@ var routes = []Route{
 		Path:    "/",
 		Handler: handlers.Index,
 	},
+	// Allow users that used POST to be redirected to index route without changing the method
+	{
+		Method:  "POST",
+		Path:    "/",
+		Handler: handlers.Index,
+	},
 	{
 		Method:     "POST",
 		Path:       "/submissions",
