@@ -50,7 +50,7 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 	HttpError(w, r, "not found", http.StatusNotFound)
 }
 
-func BadRequest(w http.ResponseWriter, r *http.Request, body string) {
+func BadRequest(w http.ResponseWriter, r *http.Request, body any) {
 	HttpError(w, r, body, http.StatusBadRequest)
 }
 
@@ -58,9 +58,9 @@ func Unauthorized(w http.ResponseWriter, r *http.Request) {
 	HttpError(w, r, "unauthorized", http.StatusUnauthorized)
 }
 
-func HttpError(w http.ResponseWriter, r *http.Request, body string, code int) {
+func HttpError(w http.ResponseWriter, r *http.Request, body any, code int) {
 	if r.Header.Get("Accept") == "application/json" {
-		resp := make(map[string]string)
+		resp := make(map[string]interface{})
 		resp["error"] = body
 
 		jsonResp, jsonErr := json.MarshalIndent(resp, "", "  ")
@@ -77,7 +77,7 @@ func HttpError(w http.ResponseWriter, r *http.Request, body string, code int) {
 
 	w.Header().Set("Content-Type", "text/html")
 
-	renderedTemplate, err := templates.Render(strconv.Itoa(code), HttpErrorTemplateData{body})
+	renderedTemplate, err := templates.Render(strconv.Itoa(code), HttpErrorTemplateData{body.(string)})
 	if err != nil {
 		log.Println("Error rendering template:", err)
 		Error500(w, r)

@@ -23,7 +23,8 @@ func (c *SubmissionController) checkValidation(w http.ResponseWriter, r *http.Re
 		return false
 	}
 	if httputil.ExpectsJSON(r) {
-		httputil.BadRequest(w, r, vr.AsJsonString())
+		httputil.BadRequest(w, r, vr.Errors)
+		return true
 	}
 
 	// Ugly, but works

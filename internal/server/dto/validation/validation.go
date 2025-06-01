@@ -1,9 +1,5 @@
 package validation
 
-import (
-	"encoding/json"
-)
-
 type Rule struct {
 	Field      string
 	Validators []Validator
@@ -31,9 +27,4 @@ func RunRules(rules []Rule, value any) ValidationResult {
 
 func (r *ValidationResult) HasErrors() bool {
 	return len(r.Errors) > 0
-}
-
-func (vr *ValidationResult) AsJsonString() string {
-	s, _ := json.Marshal(vr.Errors)
-	return string(s)
 }
