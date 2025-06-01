@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/kwinso/kubsu-web-api/internal/server/middleware"
+	"github.com/kwinso/kubsu-web-api/middleware"
 )
 
 type Controller interface {

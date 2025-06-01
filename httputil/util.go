@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kwinso/kubsu-web-api/internal/server/dto"
-	"github.com/kwinso/kubsu-web-api/internal/server/templates"
+	"github.com/kwinso/kubsu-web-api/dto"
+	"github.com/kwinso/kubsu-web-api/templates"
 )
 
 type HttpErrorTemplateData struct {

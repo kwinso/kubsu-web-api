@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/kwinso/kubsu-web-api/internal/db"
-	"github.com/kwinso/kubsu-web-api/internal/server/httputil"
-	"github.com/kwinso/kubsu-web-api/internal/server/templates"
+	"github.com/kwinso/kubsu-web-api/db"
+	"github.com/kwinso/kubsu-web-api/httputil"
+	"github.com/kwinso/kubsu-web-api/templates"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {

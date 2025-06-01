@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
-	config "github.com/kwinso/kubsu-web-api/internal"
-	"github.com/kwinso/kubsu-web-api/internal/db"
-	"github.com/kwinso/kubsu-web-api/internal/server/dto/validation"
-	"github.com/kwinso/kubsu-web-api/internal/util"
+	"github.com/kwinso/kubsu-web-api/config"
+	"github.com/kwinso/kubsu-web-api/db"
+	"github.com/kwinso/kubsu-web-api/dto/validation"
+	"github.com/kwinso/kubsu-web-api/util"
 )
 
 type CreateOrUpdateSubmissionDTO struct {

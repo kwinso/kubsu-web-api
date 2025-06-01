@@ -3,7 +3,7 @@ package dto
 import (
 	"net/http"
 
-	"github.com/kwinso/kubsu-web-api/internal/server/dto/validation"
+	"github.com/kwinso/kubsu-web-api/dto/validation"
 )
 
 type DTO interface {

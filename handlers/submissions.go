@@ -7,12 +7,12 @@ import (
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/kwinso/kubsu-web-api/internal/db"
-	"github.com/kwinso/kubsu-web-api/internal/server/dto"
-	"github.com/kwinso/kubsu-web-api/internal/server/dto/validation"
-	"github.com/kwinso/kubsu-web-api/internal/server/httputil"
-	"github.com/kwinso/kubsu-web-api/internal/server/templates"
-	"github.com/kwinso/kubsu-web-api/internal/util"
+	"github.com/kwinso/kubsu-web-api/db"
+	"github.com/kwinso/kubsu-web-api/dto"
+	"github.com/kwinso/kubsu-web-api/dto/validation"
+	"github.com/kwinso/kubsu-web-api/httputil"
+	"github.com/kwinso/kubsu-web-api/templates"
+	"github.com/kwinso/kubsu-web-api/util"
 )
 
 type SubmissionController struct {

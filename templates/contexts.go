@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"github.com/kwinso/kubsu-web-api/internal/db"
+	"github.com/kwinso/kubsu-web-api/db"
 )
 
 type IndexContextSubmission struct {
