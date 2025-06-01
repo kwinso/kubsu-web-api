@@ -31,6 +31,8 @@ func Serve() error {
 	mux := http.NewServeMux()
 
 	bootstrapedMux := bootstrapRouting(mux, routes)
+
+	// Static files
 	mux.Handle("GET /static/{file...}", http.StripPrefix("/static", http.FileServer(http.FS(static.StaticFiles))))
 
 	port := "8080"

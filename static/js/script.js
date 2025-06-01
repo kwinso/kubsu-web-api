@@ -183,22 +183,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // get submission id from the cookie
-    const submissionId = document.cookie.match(/submission_id=(\d+)/)[1];
+    let submissionId = "";
+    if (document.cookie.includes("submission_id")) {
+      submissionId = document.cookie.match(/submission_id=(\d+)/)[1];
+    }
 
     try {
-      const response = await fetch("/submissions/" + submissionId, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        "/submissions" + (submissionId ? `/${submissionId}` : ""),
+        {
+          method: submissionId ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
-        console.log(result);
         // Handle validation or server errors
         if (result.error) {
           Object.entries(result.error).forEach(([field, message]) => {

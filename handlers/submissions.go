@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -58,7 +59,6 @@ func (c *SubmissionController) checkValidation(w http.ResponseWriter, r *http.Re
 	return true
 }
 
-// TODO: Add abiilty to show templates (for errors and for the main page)
 func (c *SubmissionController) Boot(mux *http.ServeMux) *http.ServeMux {
 	mux.HandleFunc("POST /submissions", c.CreateSubmission)
 
@@ -71,6 +71,7 @@ func (c *SubmissionController) Boot(mux *http.ServeMux) *http.ServeMux {
 }
 
 func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("submissions")
 	cookieUsername, _ := r.Cookie("username")
 	cookiePass, _ := r.Cookie("password")
 
@@ -135,23 +136,24 @@ func (c *SubmissionController) CreateSubmission(w http.ResponseWriter, r *http.R
 
 	tx.Commit(r.Context())
 
+	// Set username and password cookies
+	http.SetCookie(w, &http.Cookie{
+		Name:  "submission_id",
+		Value: strconv.Itoa(int(createdSubmission.ID)),
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "username",
+		Value: username,
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "password",
+		Value: password,
+	})
+
+	fmt.Println("waiting for json")
 	if httputil.ExpectsJSON(r) {
 		httputil.WriteJSON(w, r, createdSubmission)
 	} else {
-		// Set username and password cookies
-		http.SetCookie(w, &http.Cookie{
-			Name:  "submission_id",
-			Value: strconv.Itoa(int(createdSubmission.ID)),
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:  "username",
-			Value: username,
-		})
-		http.SetCookie(w, &http.Cookie{
-			Name:  "password",
-			Value: password,
-		})
-
 		http.Redirect(w, r, "/?success=true", http.StatusSeeOther)
 	}
 }
