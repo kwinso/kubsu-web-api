@@ -4,6 +4,15 @@ select
 from
   languages;
 
+-- name: GetSubmissionByCredentials :one
+select
+  *
+from
+  submissions
+where
+  username = $1
+  and password = $2;
+
 -- name: CreateSubmission :one
 insert 
   into submissions 

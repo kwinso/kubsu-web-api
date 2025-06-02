@@ -33,7 +33,7 @@
                         </div>
                     </div></li>
                     <li><a href="#cases">наши работы</a></li>
-                    <li><a href="#reviews">отзывы</a></li>
+                    <li><a href="/login">Вход ежжжи дажи тожи таво сайта</a></li>
                     <li><a href="#contacts">контакты</a></li>
                 </ul>
             </nav>
@@ -728,6 +728,15 @@
                     <button type="submit" class="submit">Отправить</button>
                 </form>
                 <div id="feedback-message">{{if .Success}}Форма успешно отправлена!{{end}}</div>
+
+                <div id="feedback-message">{{if ne .Submission.ID 0}}
+                    Username: {{.Submission.Username}}<br/> Password: {{.Submission.Password}}
+
+                    <br/>
+                    <a href="/logout">Выйти</a>
+
+                    
+                    {{end}}</div>
             </div>
 
 

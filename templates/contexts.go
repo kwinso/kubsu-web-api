@@ -12,6 +12,8 @@ type IndexContextSubmission struct {
 	BirthDate string
 	Bio       string
 	Sex       int
+	Username  string
+	Password  string
 	Languages []int32
 }
 

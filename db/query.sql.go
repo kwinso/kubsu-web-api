@@ -138,6 +138,39 @@ func (q *Queries) GetFullSubmissionByIdAndCredentials(ctx context.Context, arg G
 	return i, err
 }
 
+const getSubmissionByCredentials = `-- name: GetSubmissionByCredentials :one
+select
+  id, name, phone, email, birth_date, bio, sex, created_at, username, password
+from
+  submissions
+where
+  username = $1
+  and password = $2
+`
+
+type GetSubmissionByCredentialsParams struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) GetSubmissionByCredentials(ctx context.Context, arg GetSubmissionByCredentialsParams) (Submission, error) {
+	row := q.db.QueryRow(ctx, getSubmissionByCredentials, arg.Username, arg.Password)
+	var i Submission
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Phone,
+		&i.Email,
+		&i.BirthDate,
+		&i.Bio,
+		&i.Sex,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Password,
+	)
+	return i, err
+}
+
 const getSubmissionByIdAndCredentials = `-- name: GetSubmissionByIdAndCredentials :one
 select
   id

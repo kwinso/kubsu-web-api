@@ -22,20 +22,18 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	submissionLanguages := make([]int32, 0)
 	if submissionId != nil && username != nil && password != nil {
 		submissionId, err := strconv.Atoi(submissionId.Value)
-		if err != nil {
-			httputil.BadRequest(w, r, "Invalid auth cookie")
-			return
-		}
-		submission, err = db.Query.GetFullSubmissionByIdAndCredentials(r.Context(), db.GetFullSubmissionByIdAndCredentialsParams{
-			ID:       int32(submissionId),
-			Username: username.Value,
-			Password: password.Value,
-		})
+		if err == nil {
+			submission, err = db.Query.GetFullSubmissionByIdAndCredentials(r.Context(), db.GetFullSubmissionByIdAndCredentialsParams{
+				ID:       int32(submissionId),
+				Username: username.Value,
+				Password: password.Value,
+			})
 
-		if err != nil {
-			if !errors.Is(err, pgx.ErrNoRows) {
-				httputil.Error500(w, r)
-				return
+			if err != nil {
+				if !errors.Is(err, pgx.ErrNoRows) {
+					httputil.Error500(w, r)
+					return
+				}
 			}
 		}
 
@@ -60,6 +58,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteTemplate(w, r, "main", templates.IndexContext{
 		Success: success == "true",
 		Submission: templates.IndexContextSubmission{
+			Username:  submission.Username,
+			Password:  submission.Password,
 			ID:        submission.ID,
 			Name:      submission.Name,
 			Phone:     submission.Phone,

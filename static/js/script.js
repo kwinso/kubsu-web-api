@@ -229,6 +229,11 @@ document.addEventListener("DOMContentLoaded", function () {
         result.message || "Форма успешно отправлена!"
       }</div>`;
 
+      // add the username and password to the feedback message
+      feedbackMessageDiv.innerHTML += `<div class="success">Username: ${result.username}<br/> Password: ${result.password}</div>`;
+      // add the logout link
+      feedbackMessageDiv.innerHTML += `<br/><a href="/logout">Выйти</a>`;
+
       // reset all errors
       document.querySelectorAll(".error").forEach((el) => el.remove());
     } catch (err) {

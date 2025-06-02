@@ -21,9 +21,12 @@ var routes = []Route{
 		Handler: handlers.Index,
 	},
 	{
-		Method:     "POST",
 		Path:       "/submissions",
 		Controller: &handlers.SubmissionController{},
+	},
+	{
+		Path:       "/login",
+		Controller: &handlers.AuthController{},
 	},
 }
 
